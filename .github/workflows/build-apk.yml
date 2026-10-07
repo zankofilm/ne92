@@ -1,0 +1,31 @@
+name: Build Madreseyar Student APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Run sanity checks
+        run: bash scripts/ci-sanity.sh
+      - name: Build installable APK
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Prepare APK
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Madreseyar-Student.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Madreseyar-Student-APK
+          path: dist/Madreseyar-Student.apk
